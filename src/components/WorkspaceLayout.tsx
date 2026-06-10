@@ -17,10 +17,8 @@ import {
   RefreshCw,
   AlertTriangle,
   ShieldCheck,
-  Download,
   Zap,
 } from "lucide-react";
-import Image from "next/image";
 import ChatInterface from "@/components/ChatInterface";
 import { dbHelpers } from "@/utils/db";
 import { BrewProject, ChatSession } from "@/types/chat";
@@ -51,9 +49,31 @@ export default function WorkspaceLayout() {
   const [benchmarkPhase, setBenchmarkPhase] = useState("");
   const [benchmarkResults, setBenchmarkResults] =
     useState<BenchmarkResults | null>(null);
-  const [hardwareTier, setHardwareTier] = useState<
-    "low" | "mid" | "high" | null
-  >(null);
+
+  useEffect(() => {
+    const savedSessionId = localStorage.getItem("brewmind-active-session");
+    if (savedSessionId) {
+      setActiveSessionId(savedSessionId);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeSessionId) {
+      localStorage.setItem("brewmind-active-session", activeSessionId);
+    } else {
+      localStorage.removeItem("brewmind-active-session");
+    }
+  }, [activeSessionId]);
+
+  useEffect(() => {
+    if (
+      activeSessionId &&
+      recentChats.length > 0 &&
+      !recentChats.some((chat) => chat.id === activeSessionId)
+    ) {
+      setActiveSessionId(null);
+    }
+  }, [activeSessionId, recentChats]);
 
   // --- 1. LOAD LOCAL DB DATA ---
   const loadWorkspaceData = async () => {
@@ -115,7 +135,13 @@ export default function WorkspaceLayout() {
       brewId: null,
       title: "New Pour",
       hoverDescription: "A fresh conversation.",
-      messages: [],
+      messages: [
+        {
+          role: "assistant",
+          content:
+            "Pour yourself a warm cup. Ready to analyze code, complex equations, or see some images?",
+        },
+      ],
       updatedAt: Date.now(),
     };
 
@@ -410,7 +436,13 @@ export default function WorkspaceLayout() {
           </div>
         ) : activeSessionId && ollamaActive && models.length > 0 ? (
           /* ACTIVE CHAT INTERFACE */
-          <ChatInterface model={selectedModel} sessionId={activeSessionId} />
+          <ChatInterface
+            model={selectedModel}
+            sessionId={activeSessionId}
+            session={
+              recentChats.find((chat) => chat.id === activeSessionId) ?? null
+            }
+          />
         ) : (
           /* EMPTY STATE */
           <div className="flex-1 flex flex-col items-center justify-center text-coffee-400 dark:text-coffee-600 space-y-4">

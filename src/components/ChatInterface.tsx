@@ -12,17 +12,13 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { fileToBase64, parseTextFile } from "@/utils/fileParser";
+import { dbHelpers } from "@/utils/db";
+import { ChatSession, Message } from "@/types/chat";
 import { marked } from "marked";
 import markedKatex from "marked-katex-extension";
 
 // Import KaTeX CSS styles so symbols render perfectly
 import "katex/dist/katex.min.css";
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-  images?: string[];
-}
 
 interface AttachedFile {
   name: string;
@@ -32,16 +28,26 @@ interface AttachedFile {
 
 interface ChatInterfaceProps {
   model: string;
+  sessionId: string;
+  session: ChatSession | null;
 }
 
-export default function ChatInterface({ model }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content:
-        "Pour yourself a warm cup. Ready to analyze code, complex equations, or see some images?",
-    },
-  ]);
+const DEFAULT_MESSAGES: Message[] = [
+  {
+    role: "assistant",
+    content:
+      "Pour yourself a warm cup. Ready to analyze code, complex equations, or see some images?",
+  },
+];
+
+export default function ChatInterface({
+  model,
+  sessionId,
+  session,
+}: ChatInterfaceProps) {
+  const [messages, setMessages] = useState<Message[]>(
+    session?.messages?.length ? session.messages : DEFAULT_MESSAGES,
+  );
   const [input, setInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
@@ -49,6 +55,7 @@ export default function ChatInterface({ model }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Configure marked with GFM and the KaTeX extension
   useEffect(() => {
@@ -72,6 +79,38 @@ export default function ChatInterface({ model }: ChatInterfaceProps) {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    setMessages(session?.messages?.length ? session.messages : DEFAULT_MESSAGES);
+  }, [sessionId, session]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      void dbHelpers.saveSession({
+        ...(session ?? {
+          id: sessionId,
+          brewId: null,
+          title: "New Pour",
+          hoverDescription: "A fresh conversation.",
+          messages: DEFAULT_MESSAGES,
+          updatedAt: Date.now(),
+        }),
+        messages,
+      });
+    }, 300);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [messages, session, sessionId]);
 
   const handlePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
     const items = e.clipboardData?.items;
@@ -144,7 +183,8 @@ export default function ChatInterface({ model }: ChatInterfaceProps) {
     const userMessage: Message = {
       role: "user",
       content:
-        input || `Analyzed ${attachedFiles.map((f) => f.name).join(", ")}`,
+        finalPromptContent.trim() ||
+        `Analyzed ${attachedFiles.map((f) => f.name).join(", ")}`,
       ...(imagesArray.length > 0 && { images: imagesArray }),
     };
 

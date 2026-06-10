@@ -75,8 +75,10 @@ export const dbHelpers = {
   async saveSession(session: ChatSession) {
     const db = await initDB();
     if (!db) return;
-    session.updatedAt = Date.now();
-    await db.put("sessions", session);
+    await db.put("sessions", {
+      ...session,
+      updatedAt: Date.now(),
+    });
   },
 
   async getSession(id: string): Promise<ChatSession | undefined> {
