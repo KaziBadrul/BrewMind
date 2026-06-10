@@ -1,3 +1,5 @@
+<img width="211" height="60" alt="image" src="https://github.com/user-attachments/assets/72328c17-cc6a-44a6-b9bf-52e46985d52c" />
+
 # BrewMind
 
 BrewMind is a local-first Next.js app for chatting with Ollama models, organizing work into projects called **Brews**, and comparing model suitability with a built-in hardware benchmark flow.
@@ -20,6 +22,11 @@ It is designed to feel like a cozy desktop workspace, but it still stays practic
 - Image and document attachment support
 - Auto-saved chat sessions
 
+  <img width="1918" height="963" alt="image" src="https://github.com/user-attachments/assets/8a2b309f-fe8b-4056-8aec-8372b2e54ce8" /> <br/>
+  <img width="1919" height="961" alt="image" src="https://github.com/user-attachments/assets/078f9c2d-df44-4c95-bff8-3fa69295a9bb" />
+
+
+
 ### Projects / Brews
 
 - Create new Brews from the sidebar
@@ -27,17 +34,28 @@ It is designed to feel like a cozy desktop workspace, but it still stays practic
 - Start project-specific chats
 - Keep work organized without needing a remote backend
 
+  <img width="1919" height="962" alt="image" src="https://github.com/user-attachments/assets/78dae84e-a311-47a3-9b9e-afd760019294" />
+
+
 ### Appearance
 
 - Light theme
 - Dark theme
 - Contrast theme with a near-black UI
 - Sidebar font selector with multiple font choices
+<img width="1919" height="963" alt="image" src="https://github.com/user-attachments/assets/9e1f8a40-59fa-4e25-adc8-e5c3dda66e30" /> <br/>
+
+<img width="1919" height="963" alt="image" src="https://github.com/user-attachments/assets/abb1a2f1-eb12-4c6c-8250-8166a5dccb15" /> <br/>
+<img width="287" height="241" alt="image" src="https://github.com/user-attachments/assets/8c6e8db6-1db5-47c3-bb83-60603619a7a5" />
+
 
 ### Benchmark
 
 - Run a client-side benchmark from the workspace
 - Compare the current machine against the app’s recommended model guidance
+
+  <img width="1919" height="958" alt="image" src="https://github.com/user-attachments/assets/0fba64cd-160e-486c-b472-25a9fa18d4ac" />
+
 
 ## Tech Stack
 
