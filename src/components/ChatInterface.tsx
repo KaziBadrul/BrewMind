@@ -14,6 +14,7 @@ import {
 import { fileToBase64, parseTextFile } from "@/utils/fileParser";
 import { dbHelpers } from "@/utils/db";
 import { ChatSession, Message } from "@/types/chat";
+import type { AppTheme } from "@/context/ThemeContext";
 import { marked } from "marked";
 import katex from "katex";
 
@@ -31,6 +32,7 @@ interface ChatInterfaceProps {
   sessionId: string;
   session: ChatSession | null;
   onSessionUpdated?: (session: ChatSession) => void;
+  theme: AppTheme;
 }
 
 const DEFAULT_MESSAGES: Message[] = [
@@ -120,6 +122,7 @@ export default function ChatInterface({
   sessionId,
   session,
   onSessionUpdated,
+  theme,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>(
     session?.messages?.length ? session.messages : DEFAULT_MESSAGES,
@@ -127,6 +130,7 @@ export default function ChatInterface({
   const [input, setInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const isContrast = theme === "contrast";
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -332,9 +336,9 @@ export default function ChatInterface({
   };
 
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className={`flex flex-col h-full w-full ${isContrast ? "bg-black text-zinc-100" : ""}`}>
       {/* Subtitle Status Bar */}
-      <div className="brew-sheen px-6 py-3 border-b border-coffee-300/20 dark:border-coffee-800/20 bg-gradient-to-r from-white/20 via-amber-100/10 to-white/20 dark:from-coffee-950/20 dark:via-coffee-900/30 dark:to-coffee-950/20 flex items-center justify-between text-xs text-coffee-600 dark:text-coffee-400">
+      <div className={`brew-sheen px-6 py-3 border-b flex items-center justify-between text-xs ${isContrast ? "border-zinc-800/70 bg-gradient-to-r from-black via-zinc-950 to-black text-zinc-400" : "border-coffee-300/20 dark:border-coffee-800/20 bg-gradient-to-r from-white/20 via-amber-100/10 to-white/20 dark:from-coffee-950/20 dark:via-coffee-900/30 dark:to-coffee-950/20 text-coffee-600 dark:text-coffee-400"}`}>
         <div className="flex items-center gap-2">
           <Flame size={14} className="text-coffee-600 dark:text-coffee-400" />
           <span>
@@ -365,17 +369,21 @@ export default function ChatInterface({
             className={`flex gap-4 max-w-4xl mx-auto ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             {msg.role === "assistant" && (
-              <div className="brew-pop w-9 h-9 rounded-xl bg-coffee-700 dark:bg-coffee-600 flex items-center justify-center text-white shadow-sm shrink-0 mt-1">
+              <div className={`brew-pop w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0 mt-1 ${isContrast ? "bg-zinc-900 border border-zinc-700" : "bg-coffee-700 dark:bg-coffee-600"}`}>
                 <Sparkles size={16} />
               </div>
             )}
 
             <div
-              className={`p-6 rounded-2xl max-w-[88%] shadow-md border space-y-4 ${
-                msg.role === "user"
-                  ? "bg-coffee-700 border-coffee-800 text-white dark:bg-coffee-800/90 dark:border-coffee-700/50"
-                  : "bg-white/85 border-coffee-300/40 text-coffee-900 dark:bg-coffee-900/50 dark:border-coffee-800/40 dark:text-coffee-100 backdrop-blur-md"
-              } brew-fade-up`}
+              className={`p-6 rounded-2xl max-w-[88%] shadow-md border space-y-4 brew-fade-up ${
+                isContrast
+                  ? msg.role === "user"
+                    ? "bg-zinc-900 border-zinc-700 text-zinc-100"
+                    : "bg-black border-zinc-800 text-zinc-100"
+                  : msg.role === "user"
+                    ? "bg-coffee-700 border-coffee-800 text-white dark:bg-coffee-800/90 dark:border-coffee-700/50"
+                    : "bg-white/85 border-coffee-300/40 text-coffee-900 dark:bg-coffee-900/50 dark:border-coffee-800/40 dark:text-coffee-100 backdrop-blur-md"
+              }`}
               style={{ animationDelay: `${Math.min(idx * 55 + 70, 390)}ms` }}
             >
               {msg.images && msg.images.length > 0 && (
@@ -394,7 +402,13 @@ export default function ChatInterface({
               {/* Enhanced High-Contrast Cozy Typography & Math Container */}
               <div
                 className={`text-[16px] md:text-[17px] leading-relaxed break-words space-y-4 tracking-wide
-                  ${msg.role === "user" ? "[&_code]:bg-coffee-800/90 [&_code]:text-coffee-100" : "[&_code]:bg-coffee-200/90 dark:[&_code]:bg-coffee-950/90 text-coffee-900 dark:text-coffee-100 [&_code]:text-amber-800 dark:[&_code]:text-amber-400"}
+                  ${
+                    isContrast
+                      ? "[&_code]:bg-zinc-900 [&_code]:text-zinc-100"
+                      : msg.role === "user"
+                        ? "[&_code]:bg-coffee-800/90 [&_code]:text-coffee-100"
+                        : "[&_code]:bg-coffee-200/90 dark:[&_code]:bg-coffee-950/90 text-coffee-900 dark:text-coffee-100 [&_code]:text-amber-800 dark:[&_code]:text-amber-400"
+                  }
                   
                   /* Math adjustments to fit comfortably in your color themes */
                   [&_.katex]:text-[1.05em]
@@ -405,12 +419,13 @@ export default function ChatInterface({
                   [&_.katex-display]:px-4 [&_.katex-display]:py-3
                   [&_.katex-display_.katex]:bg-transparent [&_.katex-display_.katex]:px-0 [&_.katex-display_.katex]:py-0
                   
-                  [&_strong]:font-bold ${msg.role === "user" ? "[&_strong]:text-white" : "[&_strong]:text-coffee-950 dark:[&_strong]:text-amber-100"}
+                  [&_strong]:font-bold ${isContrast ? "[&_strong]:text-white" : msg.role === "user" ? "[&_strong]:text-white" : "[&_strong]:text-coffee-950 dark:[&_strong]:text-amber-100"}
                   [&_h1]:text-3xl [&_h1]:font-black [&_h1]:pt-3 [&_h1]:pb-1 [&_h1]:text-coffee-950 dark:[&_h1]:text-white
                   [&_h2]:text-2xl [&_h2]:font-black [&_h2]:pt-3 [&_h2]:pb-1 [&_h2]:text-coffee-900 dark:[&_h2]:text-amber-50
                   [&_h3]:text-xl [&_h3]:font-extrabold [&_h3]:pt-2 [&_h3]:text-coffee-800 dark:[&_h3]:text-amber-100
                   [&_pre]:bg-[#170e0a] dark:[&_pre]:bg-black/75 [&_pre]:p-5 [&_pre]:rounded-xl [&_pre]:overflow-x-auto [&_pre]:my-4 [&_pre]:border [&_pre]:border-coffee-900/40 dark:[&_pre]:border-coffee-800/40 [&_pre]:shadow-inner
-                  [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-orange-100/90 dark:[&_pre_code]:text-coffee-100 [&_pre_code]:text-[14.5px] [&_pre_code]:leading-relaxed
+                  ${isContrast ? "[&_pre]:bg-black [&_pre]:border-zinc-800 [&_pre_code]:text-zinc-100" : "[&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-orange-100/90 dark:[&_pre_code]:text-coffee-100"}
+                  [&_pre_code]:text-[14.5px] [&_pre_code]:leading-relaxed
                   [&_code]:px-2 [&_code]:py-0.5 [&_code]:rounded-md [&_code]:font-mono [&_code]:text-[14.5px] [&_code]:mx-0.5
                   [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-2 [&_li]:space-y-1`}
                 dangerouslySetInnerHTML={{
@@ -420,7 +435,7 @@ export default function ChatInterface({
             </div>
 
             {msg.role === "user" && (
-              <div className="w-9 h-9 rounded-xl bg-white/60 dark:bg-coffee-900/60 border border-coffee-300/30 dark:border-coffee-800/40 flex items-center justify-center text-coffee-700 dark:text-coffee-300 shadow-sm shrink-0 mt-1">
+              <div className={`w-9 h-9 rounded-xl border flex items-center justify-center shadow-sm shrink-0 mt-1 ${isContrast ? "bg-black border-zinc-800 text-zinc-300" : "bg-white/60 dark:bg-coffee-900/60 border-coffee-300/30 dark:border-coffee-800/40 text-coffee-700 dark:text-coffee-300"}`}>
                 <User size={16} />
               </div>
             )}
@@ -430,14 +445,14 @@ export default function ChatInterface({
       </div>
 
       {/* Input Section */}
-      <div className="p-4 bg-gradient-to-t from-white/60 dark:from-coffee-950/40 to-transparent space-y-2">
+      <div className={`p-4 space-y-2 ${isContrast ? "bg-gradient-to-t from-black via-black/80 to-transparent" : "bg-gradient-to-t from-white/60 dark:from-coffee-950/40 to-transparent"}`}>
         {attachedFiles.length > 0 && (
-          <div className="brew-fade-up max-w-3xl mx-auto flex flex-wrap gap-2 p-2 rounded-xl bg-white/40 dark:bg-coffee-900/40 border border-coffee-300/20 backdrop-blur-sm">
+          <div className={`brew-fade-up max-w-3xl mx-auto flex flex-wrap gap-2 p-2 rounded-xl backdrop-blur-sm ${isContrast ? "bg-black/60 border border-zinc-800" : "bg-white/40 dark:bg-coffee-900/40 border border-coffee-300/20"}`}>
             {attachedFiles.map((file, i) => (
               <div
                 key={i}
                 style={{ animationDelay: `${i * 70}ms` }}
-                className="brew-pop flex items-center gap-2 bg-white/80 dark:bg-coffee-950 text-xs px-2.5 py-1.5 rounded-lg border border-coffee-300/30 dark:border-coffee-800/50 text-coffee-800 dark:text-coffee-200 shadow-sm"
+                className={`brew-pop flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-lg border shadow-sm ${isContrast ? "bg-zinc-900 border-zinc-700 text-zinc-200" : "bg-white/80 dark:bg-coffee-950 border-coffee-300/30 dark:border-coffee-800/50 text-coffee-800 dark:text-coffee-200"}`}
               >
                 {file.type === "image" ? (
                   <ImageIcon size={14} className="text-amber-600" />
@@ -461,7 +476,11 @@ export default function ChatInterface({
 
         <form
           onSubmit={handleSubmit}
-          className="brew-fade-up max-w-3xl mx-auto flex items-center gap-2 p-1.5 rounded-2xl bg-white/70 dark:bg-coffee-900/60 border border-coffee-300/40 dark:border-coffee-800/40 shadow-md backdrop-blur-md focus-within:ring-1 focus-within:ring-coffee-400"
+          className={`brew-fade-up max-w-3xl mx-auto flex items-center gap-2 p-1.5 rounded-2xl shadow-md backdrop-blur-md focus-within:ring-1 ${
+            isContrast
+              ? "bg-black/80 border border-zinc-800 focus-within:ring-zinc-600"
+              : "bg-white/70 dark:bg-coffee-900/60 border border-coffee-300/40 dark:border-coffee-800/40 focus-within:ring-coffee-400"
+          }`}
         >
           <input
             type="file"
@@ -476,7 +495,7 @@ export default function ChatInterface({
             type="button"
             disabled={isGenerating}
             onClick={() => fileInputRef.current?.click()}
-            className="p-2.5 rounded-xl text-coffee-600 dark:text-coffee-400 hover:bg-coffee-200/50 dark:hover:bg-coffee-800/50 transition hover:scale-105 active:scale-95"
+            className={`p-2.5 rounded-xl transition hover:scale-105 active:scale-95 ${isContrast ? "text-zinc-300 hover:bg-zinc-900" : "text-coffee-600 dark:text-coffee-400 hover:bg-coffee-200/50 dark:hover:bg-coffee-800/50"}`}
           >
             <Paperclip size={16} />
           </button>
@@ -492,7 +511,7 @@ export default function ChatInterface({
                 ? "Describe or ask questions about these uploads..."
                 : `Message ${model}...`
             }
-            className="flex-1 bg-transparent px-2 text-base text-coffee-900 dark:text-coffee-100 placeholder-coffee-400 focus:outline-none disabled:opacity-50"
+            className={`flex-1 bg-transparent px-2 text-base focus:outline-none disabled:opacity-50 ${isContrast ? "text-zinc-100 placeholder-zinc-500" : "text-coffee-900 dark:text-coffee-100 placeholder-coffee-400"}`}
           />
 
           <button
@@ -500,7 +519,7 @@ export default function ChatInterface({
             disabled={
               (!input.trim() && attachedFiles.length === 0) || isGenerating
             }
-            className="p-2.5 rounded-xl bg-coffee-700 hover:bg-coffee-800 dark:bg-coffee-600 dark:hover:bg-coffee-700 text-white font-medium transition disabled:opacity-30 shadow-sm hover:scale-105 active:scale-95"
+            className={`p-2.5 rounded-xl text-white font-medium transition disabled:opacity-30 shadow-sm hover:scale-105 active:scale-95 ${isContrast ? "bg-zinc-800 hover:bg-zinc-700" : "bg-coffee-700 hover:bg-coffee-800 dark:bg-coffee-600 dark:hover:bg-coffee-700"}`}
           >
             <Send size={16} />
           </button>

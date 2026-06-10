@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "katex/dist/katex.min.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Cozy Coffee Palette */
   --color-coffee-50: #fdfbf7; /* Cream / Latte froth */
@@ -20,6 +22,41 @@
 
   /* Modern Glassmorphism Utilities */
   --blur-glass: 12px;
+}
+
+:root {
+  --app-font-family: var(--font-sans);
+}
+
+html[data-font="geist"] {
+  --app-font-family: var(--font-sans);
+}
+
+html[data-font="inter"] {
+  --app-font-family: var(--font-inter);
+}
+
+html[data-font="lora"] {
+  --app-font-family: var(--font-lora);
+}
+
+html[data-font="merriweather"] {
+  --app-font-family: var(--font-merriweather);
+}
+
+html[data-theme="contrast"] {
+  --color-coffee-50: #f3f3f3;
+  --color-coffee-100: #181818;
+  --color-coffee-200: #1f1f1f;
+  --color-coffee-300: #262626;
+  --color-coffee-400: #505050;
+  --color-coffee-600: #9a9a9a;
+  --color-coffee-700: #d0d0d0;
+  --color-coffee-800: #ededed;
+  --color-coffee-900: #fafafa;
+  --color-coffee-950: #000000;
+  --color-scrollbar-thumb: rgba(255, 255, 255, 0.14);
+  --color-scrollbar-track: rgba(255, 255, 255, 0.02);
 }
 
 @keyframes brew-drift {
@@ -80,6 +117,7 @@
 
 /* Base setup for smooth dark/light transitions */
 body {
+  font-family: var(--app-font-family), sans-serif;
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
@@ -100,6 +138,11 @@ body {
       transparent 24%
     );
   background-attachment: fixed;
+}
+
+html[data-theme="contrast"] body {
+  background-color: #000;
+  background-image: none;
 }
 
 .brew-ambient-orb {
@@ -137,7 +180,7 @@ body {
 
 @layer utilities {
   .dark .scrollbar-thin {
-    scrollbar-color: var(--color-coffee-700) transparent;
+    scrollbar-color: var(--color-scrollbar-thumb) transparent;
   }
 
   .dark .scrollbar-thin::-webkit-scrollbar-thumb {
