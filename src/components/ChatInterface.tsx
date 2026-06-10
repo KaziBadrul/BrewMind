@@ -397,7 +397,13 @@ export default function ChatInterface({
                   ${msg.role === "user" ? "[&_code]:bg-coffee-800/90 [&_code]:text-coffee-100" : "[&_code]:bg-coffee-200/90 dark:[&_code]:bg-coffee-950/90 text-coffee-900 dark:text-coffee-100 [&_code]:text-amber-800 dark:[&_code]:text-amber-400"}
                   
                   /* Math adjustments to fit comfortably in your color themes */
-                  [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden [&_.katex]:text-[1.05em]
+                  [&_.katex]:text-[1.05em]
+                  [&_.katex]:rounded-md [&_.katex]:px-1.5 [&_.katex]:py-0.5
+                  [&_.katex]:bg-coffee-100/90 dark:[&_.katex]:bg-coffee-950/75
+                  [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden
+                  [&_.katex-display]:rounded-xl [&_.katex-display]:bg-coffee-100/70 dark:[&_.katex-display]:bg-coffee-950/60
+                  [&_.katex-display]:px-4 [&_.katex-display]:py-3
+                  [&_.katex-display_.katex]:bg-transparent [&_.katex-display_.katex]:px-0 [&_.katex-display_.katex]:py-0
                   
                   [&_strong]:font-bold ${msg.role === "user" ? "[&_strong]:text-white" : "[&_strong]:text-coffee-950 dark:[&_strong]:text-amber-100"}
                   [&_h1]:text-3xl [&_h1]:font-black [&_h1]:pt-3 [&_h1]:pb-1 [&_h1]:text-coffee-950 dark:[&_h1]:text-white
