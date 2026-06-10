@@ -1,5 +1,18 @@
 import { NextResponse } from "next/server";
 
+interface OllamaModel {
+  name: string;
+  size?: number;
+  details?: {
+    parameter_size?: string;
+    family?: string;
+  };
+}
+
+interface OllamaTagsResponse {
+  models?: OllamaModel[];
+}
+
 export async function GET() {
   try {
     // Attempt to hit local Ollama instance
@@ -11,11 +24,11 @@ export async function GET() {
       throw new Error("Ollama instance returned an error status");
     }
 
-    const data = await res.json();
+    const data = (await res.json()) as OllamaTagsResponse;
 
     // Format the response for clean consumption by our client state
     const models =
-      data.models?.map((m: any) => ({
+      data.models?.map((m) => ({
         name: m.name,
         size: m.size,
         parameterSize: m.details?.parameter_size || "Unknown",
@@ -23,7 +36,7 @@ export async function GET() {
       })) || [];
 
     return NextResponse.json({ active: true, models });
-  } catch (error) {
+  } catch {
     // If Ollama is turned off or not installed, return inactive state gracefully
     return NextResponse.json({ active: false, models: [] });
   }

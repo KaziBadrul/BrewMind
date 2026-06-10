@@ -23,6 +23,7 @@ import ChatInterface from "@/components/ChatInterface";
 import { dbHelpers } from "@/utils/db";
 import { BrewProject, ChatSession } from "@/types/chat";
 import { runComprehensiveBenchmark, BenchmarkResults } from "@/utils/benchmark";
+import Image from "next/image";
 interface Model {
   name: string;
   size: number;
@@ -184,15 +185,34 @@ export default function WorkspaceLayout() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-coffee-100 dark:bg-coffee-950 transition-colors duration-300 p-4 gap-4">
+    <div className="relative isolate flex h-screen w-full overflow-hidden scrollbar-thin bg-coffee-100 dark:bg-coffee-950 transition-colors duration-300 p-4 gap-4">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="brew-ambient-orb absolute -left-20 top-10 h-72 w-72 rounded-full bg-amber-300/20 dark:bg-amber-500/10" />
+        <div
+          className="brew-ambient-orb absolute right-8 top-24 h-96 w-96 rounded-full bg-coffee-300/25 dark:bg-coffee-700/20"
+          style={{ animationDelay: "1.8s" }}
+        />
+        <div
+          className="brew-ambient-orb absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-orange-200/20 dark:bg-orange-900/15"
+          style={{ animationDelay: "3.2s" }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(111,78,55,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(111,78,55,0.05)_1px,transparent_1px)] bg-[size:56px_56px] opacity-30 dark:opacity-15" />
+      </div>
+
       {/* --- SIDEBAR --- */}
-      <aside className="w-72 flex flex-col justify-between p-4 rounded-2xl bg-white/40 dark:bg-coffee-900/40 backdrop-blur-md border border-coffee-300/30 dark:border-coffee-800/30 shadow-sm">
+      <aside className="relative z-10 w-72 flex flex-col justify-between p-4 rounded-2xl bg-white/40 dark:bg-coffee-900/40 backdrop-blur-md border border-coffee-300/30 dark:border-coffee-800/30 shadow-sm brew-fade-up">
         {/* Top Section: Header & Workspace */}
         <div className="flex-1 overflow-hidden flex flex-col">
           <div className="flex items-center justify-between pb-4 border-b border-coffee-300/20 dark:border-coffee-800/20">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-coffee-900 text-coffee-50 dark:bg-coffee-800 shadow-md">
-                <Coffee size={20} />
+              <div className="brew-glow p-2 rounded-xl bg-coffee-900 text-coffee-50 dark:bg-coffee-800 shadow-md">
+                <Image
+                  src="/brewmind.png"
+                  alt="BrewMind Logo"
+                  width={24}
+                  height={24}
+                  className="hover:scale-110 transition-transform duration-300"
+                />
               </div>
               <div>
                 <h1 className="font-bold tracking-tight text-coffee-900 dark:text-coffee-50">
@@ -205,7 +225,7 @@ export default function WorkspaceLayout() {
             </div>
             <button
               onClick={handleNewChat}
-              className="p-2 rounded-lg bg-coffee-800 text-white hover:bg-coffee-900 dark:bg-amber-600 dark:hover:bg-amber-500 transition shadow-sm"
+              className="p-2 rounded-lg bg-coffee-800 text-white hover:bg-coffee-900 dark:bg-amber-600 dark:hover:bg-amber-500 transition shadow-sm hover:scale-105 active:scale-95"
             >
               <Plus size={16} />
             </button>
@@ -226,7 +246,7 @@ export default function WorkspaceLayout() {
               {brews.map((brew) => (
                 <button
                   key={brew.id}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-coffee-200/50 dark:hover:bg-coffee-900/50 text-coffee-800 dark:text-coffee-200 transition group text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-coffee-200/50 dark:hover:bg-coffee-900/50 text-coffee-800 dark:text-coffee-200 transition group text-left hover:-translate-y-0.5 hover:shadow-sm"
                 >
                   <FolderGit2
                     size={16}
@@ -256,7 +276,7 @@ export default function WorkspaceLayout() {
                     setActiveSessionId(chat.id);
                     setViewMode("chat");
                   }}
-                  className={`group relative w-full flex items-center justify-between px-3 py-2 rounded-xl transition cursor-pointer ${
+                  className={`group relative w-full flex items-center justify-between px-3 py-2 rounded-xl transition cursor-pointer hover:-translate-y-0.5 hover:shadow-sm ${
                     activeSessionId === chat.id && viewMode === "chat"
                       ? "bg-coffee-200 dark:bg-coffee-800/80 text-coffee-950 dark:text-white font-semibold"
                       : "hover:bg-coffee-200/50 dark:hover:bg-coffee-900/50 text-coffee-800 dark:text-coffee-200"
@@ -320,7 +340,7 @@ export default function WorkspaceLayout() {
             <button
               onClick={scanModels}
               disabled={isScanning}
-              className={`p-2 ml-2 rounded-lg hover:bg-coffee-200/50 dark:hover:bg-coffee-800/50 text-coffee-600 dark:text-coffee-400 ${isScanning ? "animate-spin" : ""}`}
+              className={`p-2 ml-2 rounded-lg hover:bg-coffee-200/50 dark:hover:bg-coffee-800/50 text-coffee-600 dark:text-coffee-400 transition-transform ${isScanning ? "animate-spin" : "hover:scale-105"}`}
             >
               <RefreshCw size={14} />
             </button>
@@ -354,11 +374,11 @@ export default function WorkspaceLayout() {
       </aside>
 
       {/* --- MAIN VIEWPORT --- */}
-      <main className="flex-1 flex flex-col rounded-2xl overflow-hidden bg-white/60 dark:bg-coffee-900/20 backdrop-blur-xl border border-white/40 dark:border-coffee-800/20 shadow-xl relative">
+      <main className="relative z-10 flex-1 flex flex-col rounded-2xl overflow-hidden bg-white/60 dark:bg-coffee-900/20 backdrop-blur-xl border border-white/40 dark:border-coffee-800/20 shadow-xl">
         {viewMode === "benchmark" ? (
           /* BENCHMARK / ONBOARDING ENGINE */
           // {/* Benchmark Runner Box */}
-          <div className="p-6 rounded-2xl bg-white/50 dark:bg-coffee-900/30 border border-coffee-300/20 dark:border-coffee-800/30 space-y-6">
+          <div className="brew-fade-up m-6 p-6 rounded-2xl bg-white/50 dark:bg-coffee-900/30 border border-coffee-300/20 dark:border-coffee-800/30 space-y-6">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
                 <h3 className="font-semibold text-coffee-800 dark:text-coffee-200 flex items-center gap-2">
@@ -373,7 +393,7 @@ export default function WorkspaceLayout() {
               <button
                 onClick={handleRunBenchmark}
                 disabled={benchmarking}
-                className="px-5 py-2.5 rounded-xl bg-coffee-700 hover:bg-coffee-800 text-white text-sm font-medium transition shadow-md disabled:opacity-50 dark:bg-coffee-600 dark:hover:bg-coffee-700 w-48"
+                className="px-5 py-2.5 rounded-xl bg-coffee-700 hover:bg-coffee-800 text-white text-sm font-medium transition shadow-md disabled:opacity-50 dark:bg-coffee-600 dark:hover:bg-coffee-700 w-48 hover:scale-[1.02] active:scale-[0.98]"
               >
                 {benchmarking ? "Testing..." : "Begin Diagnostic"}
               </button>
@@ -397,10 +417,10 @@ export default function WorkspaceLayout() {
 
             {/* Benchmark Results & Model Suggestion */}
             {benchmarkResults && !benchmarking && (
-              <div className="mt-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="mt-6 space-y-6 brew-fade-up">
                 {/* Hardware Scores */}
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 rounded-xl bg-coffee-100 dark:bg-coffee-950/50 border border-coffee-200 dark:border-coffee-800/50">
+                  <div className="brew-pop p-4 rounded-xl bg-coffee-100 dark:bg-coffee-950/50 border border-coffee-200 dark:border-coffee-800/50">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-coffee-500">
                       CPU Score
                     </span>
@@ -408,7 +428,10 @@ export default function WorkspaceLayout() {
                       {benchmarkResults.cpuScore.toLocaleString()}
                     </p>
                   </div>
-                  <div className="p-4 rounded-xl bg-coffee-100 dark:bg-coffee-950/50 border border-coffee-200 dark:border-coffee-800/50">
+                  <div
+                    className="brew-pop p-4 rounded-xl bg-coffee-100 dark:bg-coffee-950/50 border border-coffee-200 dark:border-coffee-800/50"
+                    style={{ animationDelay: "90ms" }}
+                  >
                     <span className="text-[10px] font-bold uppercase tracking-wider text-coffee-500">
                       GPU Score
                     </span>
@@ -416,7 +439,10 @@ export default function WorkspaceLayout() {
                       {benchmarkResults.gpuScore.toLocaleString()}
                     </p>
                   </div>
-                  <div className="p-4 rounded-xl bg-coffee-100 dark:bg-coffee-950/50 border border-coffee-200 dark:border-coffee-800/50">
+                  <div
+                    className="brew-pop p-4 rounded-xl bg-coffee-100 dark:bg-coffee-950/50 border border-coffee-200 dark:border-coffee-800/50"
+                    style={{ animationDelay: "180ms" }}
+                  >
                     <span className="text-[10px] font-bold uppercase tracking-wider text-coffee-500">
                       Est. Base RAM
                     </span>
@@ -427,7 +453,7 @@ export default function WorkspaceLayout() {
                 </div>
 
                 {/* Recommendation Engine */}
-                <div className="p-5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col md:flex-row gap-6">
+                <div className="brew-fade-up p-5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col md:flex-row gap-6">
                   <div className="flex-1 space-y-2">
                     <span className="text-xs font-semibold tracking-wider uppercase text-amber-700 dark:text-amber-500 flex items-center gap-2">
                       <ShieldCheck size={14} /> Perfect Match
@@ -474,8 +500,8 @@ export default function WorkspaceLayout() {
           />
         ) : (
           /* EMPTY STATE */
-          <div className="flex-1 flex flex-col items-center justify-center text-coffee-400 dark:text-coffee-600 space-y-4">
-            <Coffee size={48} className="opacity-50" />
+          <div className="flex-1 flex flex-col items-center justify-center text-coffee-400 dark:text-coffee-600 space-y-4 brew-fade-up">
+            <Coffee size={48} className="opacity-50 brew-glow" />
             <p className="text-lg font-medium">
               Select a chat from the sidebar or start a new pour.
             </p>

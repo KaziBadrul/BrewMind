@@ -334,7 +334,7 @@ export default function ChatInterface({
   return (
     <div className="flex flex-col h-full w-full">
       {/* Subtitle Status Bar */}
-      <div className="px-6 py-3 border-b border-coffee-300/20 dark:border-coffee-800/20 bg-white/20 dark:bg-coffee-950/20 flex items-center justify-between text-xs text-coffee-600 dark:text-coffee-400">
+      <div className="brew-sheen px-6 py-3 border-b border-coffee-300/20 dark:border-coffee-800/20 bg-gradient-to-r from-white/20 via-amber-100/10 to-white/20 dark:from-coffee-950/20 dark:via-coffee-900/30 dark:to-coffee-950/20 flex items-center justify-between text-xs text-coffee-600 dark:text-coffee-400">
         <div className="flex items-center gap-2">
           <Flame size={14} className="text-coffee-600 dark:text-coffee-400" />
           <span>
@@ -345,8 +345,13 @@ export default function ChatInterface({
           </span>
         </div>
         {isGenerating && (
-          <span className="animate-pulse tracking-wide font-medium">
-            Roasting data tokens...
+          <span className="flex items-center gap-2 tracking-wide font-medium">
+            <span>Roasting data tokens</span>
+            <span className="flex items-center gap-1" aria-hidden="true">
+              <span className="h-1.5 w-1.5 rounded-full bg-current animate-bounce [animation-delay:-0.2s]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-current animate-bounce [animation-delay:-0.1s]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-current animate-bounce" />
+            </span>
           </span>
         )}
       </div>
@@ -356,10 +361,11 @@ export default function ChatInterface({
         {messages.map((msg, idx) => (
           <div
             key={idx}
+            style={{ animationDelay: `${Math.min(idx * 55, 320)}ms` }}
             className={`flex gap-4 max-w-4xl mx-auto ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             {msg.role === "assistant" && (
-              <div className="w-9 h-9 rounded-xl bg-coffee-700 dark:bg-coffee-600 flex items-center justify-center text-white shadow-sm shrink-0 mt-1">
+              <div className="brew-pop w-9 h-9 rounded-xl bg-coffee-700 dark:bg-coffee-600 flex items-center justify-center text-white shadow-sm shrink-0 mt-1">
                 <Sparkles size={16} />
               </div>
             )}
@@ -369,7 +375,8 @@ export default function ChatInterface({
                 msg.role === "user"
                   ? "bg-coffee-700 border-coffee-800 text-white dark:bg-coffee-800/90 dark:border-coffee-700/50"
                   : "bg-white/85 border-coffee-300/40 text-coffee-900 dark:bg-coffee-900/50 dark:border-coffee-800/40 dark:text-coffee-100 backdrop-blur-md"
-              }`}
+              } brew-fade-up`}
+              style={{ animationDelay: `${Math.min(idx * 55 + 70, 390)}ms` }}
             >
               {msg.images && msg.images.length > 0 && (
                 <div className="flex flex-wrap gap-2 pb-2">
@@ -419,11 +426,12 @@ export default function ChatInterface({
       {/* Input Section */}
       <div className="p-4 bg-gradient-to-t from-white/60 dark:from-coffee-950/40 to-transparent space-y-2">
         {attachedFiles.length > 0 && (
-          <div className="max-w-3xl mx-auto flex flex-wrap gap-2 p-2 rounded-xl bg-white/40 dark:bg-coffee-900/40 border border-coffee-300/20 backdrop-blur-sm">
+          <div className="brew-fade-up max-w-3xl mx-auto flex flex-wrap gap-2 p-2 rounded-xl bg-white/40 dark:bg-coffee-900/40 border border-coffee-300/20 backdrop-blur-sm">
             {attachedFiles.map((file, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 bg-white/80 dark:bg-coffee-950 text-xs px-2.5 py-1.5 rounded-lg border border-coffee-300/30 dark:border-coffee-800/50 text-coffee-800 dark:text-coffee-200 shadow-sm"
+                style={{ animationDelay: `${i * 70}ms` }}
+                className="brew-pop flex items-center gap-2 bg-white/80 dark:bg-coffee-950 text-xs px-2.5 py-1.5 rounded-lg border border-coffee-300/30 dark:border-coffee-800/50 text-coffee-800 dark:text-coffee-200 shadow-sm"
               >
                 {file.type === "image" ? (
                   <ImageIcon size={14} className="text-amber-600" />
@@ -447,7 +455,7 @@ export default function ChatInterface({
 
         <form
           onSubmit={handleSubmit}
-          className="max-w-3xl mx-auto flex items-center gap-2 p-1.5 rounded-2xl bg-white/70 dark:bg-coffee-900/60 border border-coffee-300/40 dark:border-coffee-800/40 shadow-md backdrop-blur-md focus-within:ring-1 focus-within:ring-coffee-400"
+          className="brew-fade-up max-w-3xl mx-auto flex items-center gap-2 p-1.5 rounded-2xl bg-white/70 dark:bg-coffee-900/60 border border-coffee-300/40 dark:border-coffee-800/40 shadow-md backdrop-blur-md focus-within:ring-1 focus-within:ring-coffee-400"
         >
           <input
             type="file"
@@ -462,7 +470,7 @@ export default function ChatInterface({
             type="button"
             disabled={isGenerating}
             onClick={() => fileInputRef.current?.click()}
-            className="p-2.5 rounded-xl text-coffee-600 dark:text-coffee-400 hover:bg-coffee-200/50 dark:hover:bg-coffee-800/50 transition"
+            className="p-2.5 rounded-xl text-coffee-600 dark:text-coffee-400 hover:bg-coffee-200/50 dark:hover:bg-coffee-800/50 transition hover:scale-105 active:scale-95"
           >
             <Paperclip size={16} />
           </button>
@@ -486,7 +494,7 @@ export default function ChatInterface({
             disabled={
               (!input.trim() && attachedFiles.length === 0) || isGenerating
             }
-            className="p-2.5 rounded-xl bg-coffee-700 hover:bg-coffee-800 dark:bg-coffee-600 dark:hover:bg-coffee-700 text-white font-medium transition disabled:opacity-30 shadow-sm"
+            className="p-2.5 rounded-xl bg-coffee-700 hover:bg-coffee-800 dark:bg-coffee-600 dark:hover:bg-coffee-700 text-white font-medium transition disabled:opacity-30 shadow-sm hover:scale-105 active:scale-95"
           >
             <Send size={16} />
           </button>

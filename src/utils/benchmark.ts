@@ -102,7 +102,7 @@ const testGPU = async (): Promise<number> => {
       gl.getExtension("WEBGL_lose_context")?.loseContext();
 
       resolve(Math.floor(score));
-    } catch (e) {
+    } catch {
       resolve(0);
     }
   });
@@ -113,7 +113,10 @@ export const runComprehensiveBenchmark = async (
 ): Promise<BenchmarkResults> => {
   onProgress("Checking System Memory...", 10);
   // Browsers cap this at 8GB for privacy, so if it's 8, it means 8+
-  const memoryEstimate = (navigator as any).deviceMemory || 4;
+  const memoryEstimate: number =
+    "deviceMemory" in navigator
+      ? (navigator as Navigator & { deviceMemory?: number }).deviceMemory || 4
+      : 4;
   await new Promise((r) => setTimeout(r, 500));
 
   onProgress("Running CPU Matrix Simulation...", 30);

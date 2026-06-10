@@ -14,8 +14,68 @@
   --color-coffee-900: #2c1d11; /* Midnight Brew */
   --color-coffee-950: #1a100a; /* Obsidian Espresso */
 
+  /* Define your custom scrollbar colors if needed */
+  --color-scrollbar-thumb: rgba(161, 136, 127, 0.1);
+  --color-scrollbar-track: transparent;
+
   /* Modern Glassmorphism Utilities */
   --blur-glass: 12px;
+}
+
+@keyframes brew-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(18px, -22px, 0) scale(1.08);
+  }
+}
+
+@keyframes brew-sheen {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes brew-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes brew-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes brew-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(111, 78, 55, 0);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(111, 78, 55, 0.18);
+  }
 }
 
 /* Base setup for smooth dark/light transitions */
@@ -23,4 +83,82 @@ body {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
+  background-image:
+    radial-gradient(
+      circle at top left,
+      rgba(222, 203, 183, 0.28),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(111, 78, 55, 0.14),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at bottom center,
+      rgba(188, 158, 130, 0.2),
+      transparent 24%
+    );
+  background-attachment: fixed;
+}
+
+.brew-ambient-orb {
+  animation: brew-drift 12s ease-in-out infinite;
+  filter: blur(8px);
+}
+
+.brew-sheen {
+  background-size: 200% 100%;
+  animation: brew-sheen 9s linear infinite;
+}
+
+.brew-fade-up {
+  animation: brew-fade-up 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.brew-pop {
+  animation: brew-pop 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.brew-glow {
+  animation: brew-glow 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer utilities {
+  .dark .scrollbar-thin {
+    scrollbar-color: var(--color-coffee-700) transparent;
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--color-coffee-700);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: var(--color-scrollbar-track);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--color-scrollbar-thumb);
+    border-radius: 9999px;
+  }
 }
