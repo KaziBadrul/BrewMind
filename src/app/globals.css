@@ -1,26 +1,26 @@
 @import "tailwindcss";
+@import "katex/dist/katex.min.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Cozy Coffee Palette */
+  --color-coffee-50: #fdfbf7; /* Cream / Latte froth */
+  --color-coffee-100: #f7f3e9; /* Light Latte */
+  --color-coffee-200: #e6daf2; /* Almond milk */
+  --color-coffee-300: #decbb7; /* Macchiato skim */
+  --color-coffee-400: #bc9e82; /* Warm Cinnamon */
+  --color-coffee-600: #8c6239; /* Roasted Coffee Bean */
+  --color-coffee-700: #6f4e37; /* Espresso */
+  --color-coffee-800: #4a3319; /* Dark Roast */
+  --color-coffee-900: #2c1d11; /* Midnight Brew */
+  --color-coffee-950: #1a100a; /* Obsidian Espresso */
+
+  /* Modern Glassmorphism Utilities */
+  --blur-glass: 12px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base setup for smooth dark/light transitions */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
