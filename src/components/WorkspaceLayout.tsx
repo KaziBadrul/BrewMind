@@ -83,6 +83,14 @@ export default function WorkspaceLayout() {
     setRecentChats(loadedChats);
   };
 
+  const handleSessionUpdated = useCallback((updatedSession: ChatSession) => {
+    setRecentChats((current) =>
+      [...current]
+        .map((chat) => (chat.id === updatedSession.id ? updatedSession : chat))
+        .sort((a, b) => b.updatedAt - a.updatedAt),
+    );
+  }, []);
+
   useEffect(() => {
     loadWorkspaceData();
   }, []);
@@ -156,6 +164,23 @@ export default function WorkspaceLayout() {
     await dbHelpers.deleteSession(id);
     if (activeSessionId === id) setActiveSessionId(null);
     await loadWorkspaceData();
+  };
+
+  const handleRenameChat = async (chat: ChatSession, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextTitle = window.prompt("Rename chat", chat.title)?.trim();
+    if (!nextTitle) return;
+
+    const updatedSession: ChatSession = {
+      ...chat,
+      title: nextTitle,
+      hoverDescription:
+        nextTitle.length > 90 ? `${nextTitle.slice(0, 87)}...` : nextTitle,
+      updatedAt: Date.now(),
+    };
+
+    await dbHelpers.saveSession(updatedSession);
+    handleSessionUpdated(updatedSession);
   };
 
   return (
@@ -246,7 +271,10 @@ export default function WorkspaceLayout() {
                     <span className="text-sm truncate">{chat.title}</span>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 bg-transparent pl-2">
-                    <button className="p-1 hover:text-amber-600 dark:hover:text-amber-400">
+                    <button
+                      onClick={(e) => handleRenameChat(chat, e)}
+                      className="p-1 hover:text-amber-600 dark:hover:text-amber-400"
+                    >
                       <Edit2 size={14} />
                     </button>
                     <button
@@ -442,6 +470,7 @@ export default function WorkspaceLayout() {
             session={
               recentChats.find((chat) => chat.id === activeSessionId) ?? null
             }
+            onSessionUpdated={handleSessionUpdated}
           />
         ) : (
           /* EMPTY STATE */

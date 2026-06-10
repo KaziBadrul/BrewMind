@@ -1,12 +1,23 @@
 import { NextResponse } from "next/server";
 
+type ApiMessage = {
+  role: string;
+  content: string;
+  images?: string[];
+};
+
 export async function POST(req: Request) {
   try {
     const { messages, model } = await req.json();
+    const systemMessage = {
+      role: "system",
+      content:
+        "You are BrewMind. When your answer includes any mathematical expression, formula, equation, or symbolic relation, write it in LaTeX using $...$ for inline math and $$...$$ for display math. Never use plain-text approximations when a mathematical form exists. Keep the rest of the answer natural and helpful.",
+    };
 
     // Map messages to ensure images are formatted properly for Ollama's API structure
-    const formattedMessages = messages.map((msg: any) => {
-      const formatted: any = {
+    const formattedMessages: ApiMessage[] = messages.map((msg: ApiMessage) => {
+      const formatted: ApiMessage = {
         role: msg.role,
         content: msg.content,
       };
@@ -24,7 +35,7 @@ export async function POST(req: Request) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: model,
-        messages: formattedMessages,
+        messages: [systemMessage, ...formattedMessages],
         stream: true,
       }),
     });
@@ -76,7 +87,8 @@ export async function POST(req: Request) {
         Connection: "keep-alive",
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

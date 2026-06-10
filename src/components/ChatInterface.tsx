@@ -15,7 +15,7 @@ import { fileToBase64, parseTextFile } from "@/utils/fileParser";
 import { dbHelpers } from "@/utils/db";
 import { ChatSession, Message } from "@/types/chat";
 import { marked } from "marked";
-import markedKatex from "marked-katex-extension";
+import katex from "katex";
 
 // Import KaTeX CSS styles so symbols render perfectly
 import "katex/dist/katex.min.css";
@@ -30,6 +30,7 @@ interface ChatInterfaceProps {
   model: string;
   sessionId: string;
   session: ChatSession | null;
+  onSessionUpdated?: (session: ChatSession) => void;
 }
 
 const DEFAULT_MESSAGES: Message[] = [
@@ -40,10 +41,85 @@ const DEFAULT_MESSAGES: Message[] = [
   },
 ];
 
+const DEFAULT_SESSION_TITLE = "New Pour";
+
+function stripMathDelimiters(value: string) {
+  return value
+    .replace(/\$\$([\s\S]+?)\$\$/g, " ")
+    .replace(/\\\[([\s\S]+?)\\\]/g, " ")
+    .replace(/\\\(([\s\S]+?)\\\)/g, " ")
+    .replace(/\$([^\n$]+?)\$/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function titleCase(value: string) {
+  return value
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 6)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function buildAutoTitle(messages: Message[]) {
+  const firstUserMessage = messages.find((message) => message.role === "user");
+  const cleaned = stripMathDelimiters(firstUserMessage?.content ?? "");
+  if (!cleaned) return DEFAULT_SESSION_TITLE;
+  return titleCase(cleaned);
+}
+
+function buildAutoDescription(messages: Message[]) {
+  const firstUserMessage = messages.find((message) => message.role === "user");
+  const cleaned = stripMathDelimiters(firstUserMessage?.content ?? "");
+  if (!cleaned) return "A fresh conversation.";
+  return cleaned.length > 90 ? `${cleaned.slice(0, 87)}...` : cleaned;
+}
+
+function renderMath(content: string) {
+  const renderedSegments = new Map<string, string>();
+  let segmentIndex = 0;
+
+  const tokenFor = (formula: string, displayMode: boolean) => {
+    const token = `MATHPLACEHOLDER${segmentIndex++}MATH`;
+    renderedSegments.set(
+      token,
+      katex.renderToString(formula.trim(), {
+        displayMode,
+        throwOnError: false,
+      }),
+    );
+    return token;
+  };
+
+  const transformed = content
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_, formula: string) =>
+      tokenFor(formula, true),
+    )
+    .replace(/\$\$([\s\S]+?)\$\$/g, (_, formula: string) =>
+      tokenFor(formula, true),
+    )
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_, formula: string) =>
+      tokenFor(formula, false),
+    )
+    .replace(/(?<!\\)\$(?!\$)([^$\n]+?)(?<!\\)\$(?!\$)/g, (_, formula: string) =>
+      tokenFor(formula, false),
+    );
+
+  let html = marked.parse(transformed) as string;
+
+  for (const [token, rendered] of renderedSegments.entries()) {
+    html = html.replaceAll(token, rendered);
+  }
+
+  return html;
+}
+
 export default function ChatInterface({
   model,
   sessionId,
   session,
+  onSessionUpdated,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>(
     session?.messages?.length ? session.messages : DEFAULT_MESSAGES,
@@ -56,20 +132,13 @@ export default function ChatInterface({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSavedSnapshotRef = useRef("");
 
-  // Configure marked with GFM and the KaTeX extension
   useEffect(() => {
     marked.setOptions({
       breaks: true,
       gfm: true,
     });
-    // Inject the math compiler extension into the marked compiler instance
-    marked.use(
-      markedKatex({
-        throwOnError: false,
-        nonStandard: true, // Allows handling variations in delimiters smoothly
-      }),
-    );
   }, []);
 
   useEffect(() => {
@@ -91,17 +160,43 @@ export default function ChatInterface({
       clearTimeout(saveTimeoutRef.current);
     }
 
+    const nextSnapshot = JSON.stringify({
+      sessionId,
+      title: session?.title ?? DEFAULT_SESSION_TITLE,
+      hoverDescription: session?.hoverDescription ?? "A fresh conversation.",
+      messages,
+    });
+
+    if (nextSnapshot === lastSavedSnapshotRef.current) {
+      return;
+    }
+
     saveTimeoutRef.current = setTimeout(() => {
-      void dbHelpers.saveSession({
+      const nextSession: ChatSession = {
         ...(session ?? {
           id: sessionId,
           brewId: null,
-          title: "New Pour",
+          title: DEFAULT_SESSION_TITLE,
           hoverDescription: "A fresh conversation.",
           messages: DEFAULT_MESSAGES,
           updatedAt: Date.now(),
         }),
         messages,
+      };
+
+      if (nextSession.title === DEFAULT_SESSION_TITLE) {
+        nextSession.title = buildAutoTitle(messages);
+        nextSession.hoverDescription = buildAutoDescription(messages);
+      }
+
+      void dbHelpers.saveSession(nextSession).then(() => {
+        lastSavedSnapshotRef.current = JSON.stringify({
+          sessionId,
+          title: nextSession.title,
+          hoverDescription: nextSession.hoverDescription,
+          messages,
+        });
+        onSessionUpdated?.(nextSession);
       });
     }, 300);
 
@@ -110,7 +205,7 @@ export default function ChatInterface({
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [messages, session, sessionId]);
+  }, [messages, session, sessionId, onSessionUpdated]);
 
   const handlePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
     const items = e.clipboardData?.items;
@@ -306,7 +401,7 @@ export default function ChatInterface({
                   [&_code]:px-2 [&_code]:py-0.5 [&_code]:rounded-md [&_code]:font-mono [&_code]:text-[14.5px] [&_code]:mx-0.5
                   [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-2 [&_li]:space-y-1`}
                 dangerouslySetInnerHTML={{
-                  __html: marked.parse(msg.content || "..."),
+                  __html: renderMath(msg.content || "..."),
                 }}
               />
             </div>
